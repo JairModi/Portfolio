@@ -1,0 +1,248 @@
+
+<title>Ontwikkelomgeving</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html { font-size: 15px; }
+  body {
+    margin: 0; min-height: 100vh; display: flex;
+    font-family: 'Archivo', sans-serif; color: #161B26;
+  }
+  .mono { font-family: 'IBM Plex Mono', monospace; }
+
+  /* ===== Linkerpaneel: branding ===== */
+  .merkpaneel {
+    flex: 1; min-width: 0; background: #15233A; color: #FFFFFF;
+    display: flex; flex-direction: column; justify-content: space-between;
+    padding: 56px 56px 48px; position: relative; overflow: hidden;
+  }
+  .merkpaneel::before {
+    content: ""; position: absolute; top: -140px; right: -140px;
+    width: 380px; height: 380px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(96,172,225,0.22), transparent 70%);
+  }
+  .logo-groot { width: 52px; height: 52px; border-radius: 12px; background: #60ACE1;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'IBM Plex Mono', monospace; font-weight: 700; color: #0E2240; font-size: 19px;
+    margin-bottom: 40px; position: relative; z-index: 1; }
+  .merkpaneel h1 {
+    font-size: 2.1rem; line-height: 1.25; font-weight: 700; margin: 0 0 18px; max-width: 460px;
+    position: relative; z-index: 1;
+  }
+  .merkpaneel p.tagline {
+    font-size: 1.05rem; color: #A9BDDA; line-height: 1.6; max-width: 420px; margin: 0;
+    position: relative; z-index: 1;
+  }
+  .kenmerken { display: flex; flex-direction: column; gap: 18px; margin-top: 44px; position: relative; z-index: 1; }
+  .kenmerk { display: flex; align-items: flex-start; gap: 14px; }
+  .kenmerk-icoon {
+    width: 34px; height: 34px; border-radius: 9px; background: #1E3A5F; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .kenmerk-tekst { font-size: 0.92rem; color: #DCE6F5; line-height: 1.5; padding-top: 6px; }
+  .footer-tag {
+    font-size: 0.8rem; color: #7F9AC0; position: relative; z-index: 1;
+  }
+
+  /* ===== Rechterpaneel: inlogformulier ===== */
+  .formpaneel {
+    width: 460px; flex-shrink: 0; background: #F1EBF7;
+    display: flex; align-items: center; justify-content: center; padding: 40px;
+  }
+  .formkaart { width: 100%; max-width: 360px; }
+  .formkaart h2 { font-size: 1.5rem; font-weight: 700; margin: 0 0 6px; }
+  .formkaart p.sub { color: #5B6477; font-size: 0.9rem; margin: 0 0 28px; }
+  label { display: block; font-size: 0.85rem; font-weight: 600; color: #161B26; margin-bottom: 7px; }
+  input {
+    width: 100%; padding: 12px 14px; border: 1px solid #E1DAEC; border-radius: 9px;
+    font-family: 'Archivo', sans-serif; font-size: 0.95rem; margin-bottom: 18px; background: #FFFFFF;
+  }
+  input:focus { outline: 2px solid #3F8CDD; outline-offset: 1px; border-color: #3F8CDD; }
+  button {
+    width: 100%; background: #60ACE1; color: #0E2240; font-size: 0.95rem; font-weight: 700;
+    padding: 13px; border: none; border-radius: 9px; cursor: pointer;
+  }
+  button:hover { background: #3F8CDD; }
+  /* Rode inline-validatie i.p.v. de standaard oranje browserbubbel */
+  input.ongeldig { border-color: #DC2626; background: #FFF8F8; animation: schud .35s ease; }
+  input.ongeldig:focus { outline-color: #DC2626; border-color: #DC2626; }
+  .veld-fout {
+    display: flex; align-items: center; gap: 6px; color: #DC2626; font-size: 0.8rem; font-weight: 600;
+    margin: -12px 0 16px; animation: foutIn .2s ease;
+  }
+  .veld-fout svg { flex-shrink: 0; }
+  .wachtwoord-wrap + .veld-fout { margin-top: -12px; }
+  @keyframes foutIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+  @keyframes schud { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
+  /* Wachtwoordveld met oog-knop rechts */
+  .wachtwoord-wrap { position: relative; }
+  .wachtwoord-wrap input { padding-right: 46px; }
+  .wachtwoord-wrap .oog-knop {
+    position: absolute; right: 6px; top: 4px; width: 38px; height: 38px; padding: 0;
+    background: transparent; color: #7D869A; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    transition: color .15s ease, background .15s ease;
+  }
+  .wachtwoord-wrap .oog-knop:hover { background: #F1ECF6; color: #3F8CDD; }
+  .wachtwoord-wrap .oog-knop:focus-visible { outline: 2px solid #3F8CDD; outline-offset: 1px; }
+  .oog-knop .oog-uit { display: none; }
+  .oog-knop.zichtbaar .oog-uit { display: block; }
+  .oog-knop.zichtbaar .oog-aan { display: none; }
+  .oog-knop.zichtbaar { color: #3F8CDD; }
+  .fout {
+    background: #FEF2F2; border: 1px solid #F66169; color: #B91C1C; font-weight: 600;
+    font-size: 0.85rem; padding: 11px 13px; border-radius: 8px; margin-bottom: 18px;
+  }
+
+  @media (max-width: 860px) {
+    .merkpaneel { display: none; }
+    .formpaneel { width: 100%; }
+  }
+</style>
+
+<script>
+(function () {
+  function toast(t) {
+    var el = document.getElementById('demoToast');
+    if (!el) {
+      el = document.createElement('div'); el.id = 'demoToast';
+      el.style.cssText = 'position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#1C2340;color:#fff;font:600 13px Archivo,Arial,sans-serif;padding:11px 16px;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.25);z-index:99999;max-width:90vw;text-align:center;transition:opacity .2s';
+      document.body.appendChild(el);
+    }
+    el.textContent = t; el.style.opacity = '1';
+    clearTimeout(el._t); el._t = setTimeout(function () { el.style.opacity = '0'; }, 3200);
+  }
+  HTMLFormElement.prototype.submit = function () { toest(this); };
+  function toest(form) {
+    if (form.id === 'loginForm') { location.href = 'dashboard.html#welkom'; return; }
+    if ((form.getAttribute('action') || '').indexOf('index.html') > -1) { location.href = 'index.html'; return; }
+    var m = document.getElementById('annuleerModal'); if (m) m.classList.remove('open');
+    toast('Demo-weergave: opslaan werkt alleen in de echte versie.');
+  }
+  // Bubbelfase: de eigen controle van elke pagina (rode melding) draait eerst en kan het formulier al stoppen.
+  document.addEventListener('submit', function (e) {
+    if (!e.defaultPrevented) { e.preventDefault(); toest(e.target); }
+  });
+  var pill = document.createElement('div');
+  pill.textContent = 'Demo-weergave';
+  pill.style.cssText = 'position:fixed;right:12px;bottom:10px;background:rgba(28,35,64,.82);color:#fff;font:600 11px Archivo,Arial,sans-serif;padding:5px 10px;border-radius:20px;z-index:99998;pointer-events:none';
+  document.addEventListener('DOMContentLoaded', function () { document.body.appendChild(pill); });
+})();
+</script>
+
+
+  <div class="merkpaneel">
+    <div>
+      <div class="logo-groot" style="background:none;width:auto;height:auto;justify-content:flex-start"><svg width="60" height="60" viewBox="0 0 112 112" style="flex-shrink:0;display:block" aria-hidden="true"><rect x="10" y="10" width="96" height="96" rx="18" fill="#1C2340"/><rect x="4" y="4" width="96" height="96" rx="18" fill="#3F8CDD" stroke="#1C2340" stroke-width="4"/><rect x="20" y="58" width="16" height="26" rx="3" fill="#F1EBF7" stroke="#1C2340" stroke-width="3.5"/><rect x="42" y="44" width="16" height="40" rx="3" fill="#FEBD3A" stroke="#1C2340" stroke-width="3.5"/><rect x="64" y="28" width="16" height="56" rx="3" fill="#F66169" stroke="#1C2340" stroke-width="3.5"/></svg></div>
+      <h1>Persoonlijke Ontwikkelomgeving</h1>
+      <p class="tagline">Scrumteam Yelesion — volg je leeruitkomsten, projecten en begeleiding op één plek.</p>
+
+      <div class="kenmerken">
+        <div class="kenmerk">
+          <div class="kenmerk-icoon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8EC1EE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5-10-5z"></path><path d="M6 12v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5"></path></svg>
+          </div>
+          <div class="kenmerk-tekst">Zie in één oogopslag hoever je staat met elke leeruitkomst.</div>
+        </div>
+        <div class="kenmerk">
+          <div class="kenmerk-icoon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8EC1EE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          </div>
+          <div class="kenmerk-tekst">Houd contact met je SLB'er en plan gesprekken in.</div>
+        </div>
+        <div class="kenmerk">
+          <div class="kenmerk-icoon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8EC1EE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          </div>
+          <div class="kenmerk-tekst">Dien je uren in en volg de status van je projecten.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-tag mono">Project ITIG</div>
+  </div>
+
+  <div class="formpaneel">
+    <div class="formkaart">
+      <h2>Inloggen</h2>
+      <p class="sub">Log in met je schoolaccount om verder te gaan.</p>
+
+      
+
+      <form method="POST" action="index.html" autocomplete="off" novalidate id="loginForm">
+        <label for="email">E-mailadres</label>
+        <input id="email" type="email" name="email" required autofocus
+               value="lucas.devries@itig.nl">
+
+        <label for="wachtwoord">Wachtwoord</label>
+        <div class="wachtwoord-wrap">
+          <input id="wachtwoord" type="password" name="wachtwoord" required value="Test1234!">
+          <button type="button" class="oog-knop" id="oogKnop" aria-label="Wachtwoord tonen" aria-pressed="false">
+            <!-- oog open (wachtwoord verborgen) -->
+            <svg class="oog-aan" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            <!-- oog doorgestreept (wachtwoord zichtbaar) -->
+            <svg class="oog-uit" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+          </button>
+        </div>
+
+        <button type="submit">Inloggen</button>
+      </form>
+    </div>
+  </div>
+
+<script>
+  // Eigen rode validatie (formulier heeft novalidate, dus geen oranje browserbubbel).
+  (function () {
+    var form = document.getElementById('loginForm');
+    var icoon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+
+    function wis(veld) {
+      veld.classList.remove('ongeldig');
+      var holder = veld.closest('.wachtwoord-wrap') || veld;
+      var fout = holder.nextElementSibling;
+      if (fout && fout.classList.contains('veld-fout')) fout.remove();
+    }
+    function toon(veld, tekst) {
+      wis(veld);
+      void veld.offsetWidth; // herstart de schud-animatie
+      veld.classList.add('ongeldig');
+      var holder = veld.closest('.wachtwoord-wrap') || veld;
+      var el = document.createElement('div');
+      el.className = 'veld-fout';
+      el.innerHTML = icoon + '<span></span>';
+      el.lastChild.textContent = tekst;
+      holder.insertAdjacentElement('afterend', el);
+    }
+
+    var email = document.getElementById('email');
+    var ww = document.getElementById('wachtwoord');
+    [email, ww].forEach(function (v) { v.addEventListener('input', function () { wis(v); }); });
+
+    form.addEventListener('submit', function (e) {
+      var eerste = null;
+      var mail = email.value.trim();
+      if (mail === '') { toon(email, 'Vul je e-mailadres in.'); eerste = eerste || email; }
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) { toon(email, 'Dit is geen geldig e-mailadres.'); eerste = eerste || email; }
+      if (ww.value === '') { toon(ww, 'Vul je wachtwoord in.'); eerste = eerste || ww; }
+      if (eerste) { e.preventDefault(); eerste.focus(); }
+    });
+  })();
+
+  // Oog-knop: wisselt het wachtwoordveld tussen verborgen en zichtbaar.
+  (function () {
+    var veld = document.getElementById('wachtwoord');
+    var knop = document.getElementById('oogKnop');
+    knop.addEventListener('click', function () {
+      var tonen = veld.type === 'password';
+      veld.type = tonen ? 'text' : 'password';
+      knop.classList.toggle('zichtbaar', tonen);
+      knop.setAttribute('aria-pressed', tonen ? 'true' : 'false');
+      knop.setAttribute('aria-label', tonen ? 'Wachtwoord verbergen' : 'Wachtwoord tonen');
+      veld.focus();
+    });
+  })();
+</script>
+
