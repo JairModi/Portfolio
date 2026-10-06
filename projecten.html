@@ -1,0 +1,595 @@
+
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Projecten — Persoonlijke Ontwikkelomgeving</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body { font-family: 'Archivo', sans-serif; background: #F1EBF7; color: #161B26; }
+  .mono { font-family: 'IBM Plex Mono', monospace; }
+  a { color: #3F8CDD; text-decoration: none; }
+  a:hover { color: #2F74C0; }
+  .navitem { text-decoration: none; }
+  .gebruikerlink:hover { background: #1B2E4B; }
+
+  html { zoom: .88; }
+  .pagina { display: flex; min-height: calc(100vh / .88); width: 100%; }
+  .rail { width: 72px; flex-shrink: 0; background: #15233A; display: flex; flex-direction: column; padding: 14px 0; box-sizing: border-box; transition: width .18s ease; overflow: hidden; }
+  .rail.expanded { width: 200px; }
+  .rail-label { display: none; white-space: nowrap; }
+  .rail.expanded .rail-label { display: block; }
+
+  .hoofdinhoud { flex: 1; min-width: 0; padding: 28px 32px 36px; box-sizing: border-box; }
+  .hoofdinhoud-binnen { max-width: 1100px; margin: 0 auto; width: 100%; }
+
+  .header-uitlog {
+    display: inline-flex; align-items: center; gap: 7px; background: #FFFFFF; border: 1px solid #E1DAEC;
+    color: #5B6477; font-size: 12.5px; font-weight: 600; padding: 10px 14px; border-radius: 9px; cursor: pointer;
+    font-family: 'Archivo', sans-serif;
+  }
+  .header-uitlog:hover { background: #FEF1F2; border-color: #FBC6CA; color: #D0414B; }
+
+  .kaart { background: #FFFFFF; border-radius: 12px; border: 1px solid #E1DAEC; padding: 18px; }
+
+  .veld { margin-bottom: 14px; }
+  .veld label { display: block; font-size: 12px; font-weight: 600; color: #161B26; margin-bottom: 6px; }
+  .veld select, .veld textarea {
+    width: 100%; padding: 10px 12px; border: 1px solid #E1DAEC; border-radius: 8px;
+    font-family: 'Archivo', sans-serif; font-size: 13px; background: #FBFAFD; color: #161B26;
+  }
+  .veld textarea { resize: vertical; min-height: 110px; line-height: 1.5; }
+  .veld select:focus, .veld textarea:focus { outline: 2px solid #3F8CDD; outline-offset: 1px; border-color: #3F8CDD; }
+  .veld .ongeldig { border-color: #DC2626; background: #FFF8F8; animation: schud .35s ease; }
+  .teller { text-align: right; font-size: 11px; color: #939BAD; margin-top: 4px; font-variant-numeric: tabular-nums; }
+  .teller.vol { color: #DC2626; font-weight: 700; }
+
+  .veld-fout {
+    display: flex; align-items: center; gap: 6px; color: #DC2626; font-size: 11.5px; font-weight: 600;
+    margin-top: 6px; animation: foutIn .2s ease;
+  }
+  .veld-fout svg { flex-shrink: 0; }
+  @keyframes foutIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+  @keyframes schud { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
+  .knop-primair {
+    width: 100%; background: #60ACE1; color: #0E2240; font-size: 13px; font-weight: 700; font-family: inherit;
+    padding: 11px; border: none; border-radius: 9px; cursor: pointer;
+    transition: background .15s ease, transform .12s ease, box-shadow .15s ease;
+  }
+  .knop-primair:hover { background: #3F8CDD; transform: translateY(-1px); box-shadow: 0 6px 14px rgba(63,140,221,.28); }
+  .knop-primair:active { transform: translateY(0) scale(.97); box-shadow: 0 2px 6px rgba(63,140,221,.2); }
+
+  .melding-fout { background: #FEF2F2; border: 1px solid #F66169; color: #B91C1C; font-size: 12px; font-weight: 600; padding: 10px 12px; border-radius: 8px; margin-bottom: 14px; }
+  .melding-succes { background: #ECFDF5; border: 1px solid #86EFAC; color: #15803D; font-size: 12px; font-weight: 600; padding: 10px 12px; border-radius: 8px; margin-bottom: 14px; animation: foutIn .3s ease; }
+
+  /* Filter-chips */
+  .filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  .filter {
+    border: 1px solid #E1DAEC; background: #FBFAFD; color: #5B6477; font-family: inherit; font-size: 12px; font-weight: 600;
+    padding: 6px 12px; border-radius: 20px; cursor: pointer;
+    transition: background .15s ease, color .15s ease, border-color .15s ease, transform .12s ease;
+  }
+  .filter:hover { border-color: #3F8CDD; color: #3F8CDD; }
+  .filter:active { transform: scale(.95); }
+  .filter.actief { background: #3F8CDD; border-color: #3F8CDD; color: #FFFFFF; }
+  .filter .aantal { opacity: .7; margin-left: 4px; font-variant-numeric: tabular-nums; }
+
+  /* Feedbackkaartjes */
+  .fb-lijst { display: flex; flex-direction: column; gap: 12px; }
+  .fb-item {
+    display: flex; gap: 12px; padding: 14px; border: 1px solid #E9E3F1; border-radius: 11px; background: #FFFFFF;
+    transition: box-shadow .2s ease, transform .2s ease, opacity .25s ease;
+  }
+  .fb-item:hover { box-shadow: 0 6px 18px rgba(21,35,58,.07); transform: translateY(-1px); }
+  .fb-item.weg { display: none; }
+  .fb-avatar {
+    width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; color: #FFFFFF;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 12px;
+  }
+  .fb-kop { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+  .fb-naam { font-size: 13px; font-weight: 700; }
+  .fb-badge { font-size: 10.5px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+  .fb-datum { margin-left: auto; font-size: 10.5px; color: #939BAD; }
+  .fb-tekst { font-size: 13px; color: #3D465A; line-height: 1.55; margin: 0; white-space: pre-line; overflow-wrap: anywhere; }
+  .leeg-staat { text-align: center; padding: 28px 10px; color: #8790A3; font-size: 13px; }
+  .leeg-staat svg { display: block; margin: 0 auto 10px; color: #BDC3D1; }
+
+  /* Levendige opkomst */
+  .kop-opkomst { animation: opKomstOmlaag .5s cubic-bezier(.2,.8,.2,1) backwards; }
+  .kaart { animation: opKomstOmhoog .55s cubic-bezier(.2,.8,.2,1) backwards; animation-delay: calc(var(--i, 0) * 90ms + 80ms); }
+  .fb-item { animation: opKomstLinks .45s cubic-bezier(.2,.8,.2,1) backwards; animation-delay: calc(var(--j, 0) * 60ms + 250ms); }
+  @keyframes opKomstOmlaag { from { opacity: 0; transform: translateY(-10px); } }
+  @keyframes opKomstOmhoog { from { opacity: 0; transform: translateY(18px); } }
+  @keyframes opKomstLinks  { from { opacity: 0; transform: translateX(-14px); } }
+  @media (prefers-reduced-motion: reduce) {
+    .kop-opkomst, .kaart, .fb-item { animation: none !important; }
+  }
+
+  @media (max-width: 900px) { .twee-kol { grid-template-columns: 1fr !important; } }
+
+  /* Uren-pagina */
+  .veld input[type=date], .veld input[type=text] {
+    width: 100%; padding: 10px 12px; border: 1px solid #E1DAEC; border-radius: 8px;
+    font-family: 'Archivo', sans-serif; font-size: 13px; background: #FBFAFD; color: #161B26;
+  }
+  .veld input:focus { outline: 2px solid #3F8CDD; outline-offset: 1px; border-color: #3F8CDD; }
+  .veld input.ongeldig, .veld select.ongeldig { border-color: #DC2626; background: #FFF8F8; }
+  .veld-twee { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .tegels { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+  .tegel { padding: 14px 16px; }
+  .tegel-label { color: #6B7280; font-size: 11.5px; font-weight: 600; margin-bottom: 6px; }
+  .tegel-waarde { font-size: 21px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .tegel-waarde small { font-size: 13px; font-weight: 500; color: #9CA3AF; margin-left: 2px; }
+  .uren-rij {
+    display: grid; grid-template-columns: 92px 1fr 64px 110px 34px; gap: 12px; align-items: center;
+    padding: 11px 4px; border-bottom: 1px solid #EFEAF5; font-size: 13px;
+  }
+  .uren-rij:last-child { border-bottom: none; }
+  .uren-rij.weg { display: none; }
+  .uren-datum { color: #5B6477; font-size: 11.5px; }
+  .uren-project { font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
+  .uren-aantal { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .uren-status { font-size: 11.5px; font-weight: 700; }
+  .uren-knop {
+    width: 30px; height: 30px; border-radius: 8px; border: 1px solid #FBC6CA; background: #FEF1F2; color: #D0414B;
+    display: inline-flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; font-family: inherit;
+    transition: background .15s ease, transform .12s ease;
+  }
+  .uren-knop:hover { background: #FDE1E3; }
+  .uren-knop:active { transform: scale(.92); }
+  .uren-knop.zeker { width: auto; padding: 0 9px; font-size: 11px; font-weight: 700; background: #D0414B; color: #FFFFFF; border-color: #D0414B; }
+  .tegel { animation: opKomstOmhoog .55s cubic-bezier(.2,.8,.2,1) backwards; animation-delay: calc(var(--i, 0) * 70ms + 80ms); }
+  @media (prefers-reduced-motion: reduce) { .tegel { animation: none !important; } }
+  @media (max-width: 900px) { .tegels { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 560px) {
+    .uren-rij { grid-template-columns: 1fr auto; row-gap: 4px; }
+    .uren-datum, .uren-status { grid-column: 1; } .uren-aantal { grid-column: 2; grid-row: 1; } .uren-rij form { grid-column: 2; grid-row: 2; justify-self: end; }
+  }
+
+  .project-kaart { border: 1px solid #E9E3F1; border-radius: 11px; background: #FFFFFF; transition: box-shadow .3s ease, border-color .3s ease; }
+  .project-kaart.open { box-shadow: 0 8px 22px rgba(21,35,58,.08); border-color: #D6CCE6; }
+  .project-kaart.weg { display: none; }
+  .project-kop {
+    all: unset; box-sizing: border-box; width: 100%; cursor: pointer;
+    display: grid; grid-template-columns: 1fr 170px 150px 18px; gap: 14px; align-items: center; padding: 14px 16px;
+  }
+  .project-kop:focus-visible { outline: 2px solid #3F8CDD; outline-offset: -2px; border-radius: 11px; }
+  .project-kop:hover .project-titel { color: #3F8CDD; }
+  .project-titel { font-size: 13.5px; font-weight: 700; transition: color .15s ease; overflow-wrap: anywhere; }
+  .project-sub { font-size: 11.5px; color: #8790A3; margin-top: 2px; }
+  .balk { height: 6px; border-radius: 4px; background: #EFEAF5; overflow: hidden; }
+  .balk > span { display: block; height: 100%; border-radius: 4px; }
+  .balk-rij { display: flex; align-items: center; gap: 10px; }
+  .balk-rij .balk { flex: 1; }
+  .balk-pct { font-size: 12px; font-weight: 700; width: 38px; text-align: right; font-variant-numeric: tabular-nums; }
+  .pijl { transition: transform .35s cubic-bezier(.2,.8,.2,1); color: #939BAD; }
+  .project-kaart.open .pijl { transform: rotate(90deg); }
+
+  /* Vloeiend open- en dichtklappen: de rij groeit van 0fr naar 1fr */
+  .project-paneel { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .4s cubic-bezier(.2,.8,.2,1); }
+  .project-kaart.open .project-paneel { grid-template-rows: 1fr; }
+  .project-paneel-binnen { overflow: hidden; min-height: 0; }
+  .project-binnen { padding: 0 16px 16px; border-top: 1px solid #EFEAF5; opacity: 0; transform: translateY(-6px); transition: opacity .3s ease, transform .35s cubic-bezier(.2,.8,.2,1); }
+  .project-kaart.open .project-binnen { opacity: 1; transform: none; transition-delay: .08s; }
+  .project-groot { padding: 14px 0 4px; }
+  .project-groot .kop { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 7px; font-size: 12px; color: #6B7280; font-weight: 600; }
+  .project-groot .getal { font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .balk-groot { height: 10px; border-radius: 6px; background: #EFEAF5; overflow: hidden; }
+  .balk-groot > span { display: block; height: 100%; width: 0; border-radius: 6px; transition: width .7s cubic-bezier(.2,.8,.2,1) .12s; }
+  .project-kaart.open .balk-groot > span { width: var(--pct); }
+  .project-feiten { display: flex; flex-wrap: wrap; gap: 8px 28px; padding: 12px 0; font-size: 12px; }
+  .project-feiten .l { color: #8790A3; margin-right: 6px; }
+  .project-feiten .w { font-weight: 700; font-variant-numeric: tabular-nums; }
+  .mini-uren { display: grid; grid-template-columns: 100px 1fr auto; gap: 6px 14px; font-size: 12px; }
+  .project-lijst { display: flex; flex-direction: column; gap: 10px; }
+  @media (max-width: 720px) { .project-kop { grid-template-columns: 1fr 18px; } .project-kop .balk-wrap, .project-kop .status-wrap { grid-column: 1; } }
+  @media (prefers-reduced-motion: reduce) { .project-paneel, .project-binnen, .balk-groot > span, .pijl, .project-kaart { transition: none !important; } }
+  .legenda { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 11.5px; color: #6B7280; margin: 14px 0 0; align-items: center; }
+  .legenda .punt { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+</style>
+<script>
+(function () {
+  function toast(t) {
+    var el = document.getElementById('demoToast');
+    if (!el) {
+      el = document.createElement('div'); el.id = 'demoToast';
+      el.style.cssText = 'position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#1C2340;color:#fff;font:600 13px Archivo,Arial,sans-serif;padding:11px 16px;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.25);z-index:99999;max-width:90vw;text-align:center;transition:opacity .2s';
+      document.body.appendChild(el);
+    }
+    el.textContent = t; el.style.opacity = '1';
+    clearTimeout(el._t); el._t = setTimeout(function () { el.style.opacity = '0'; }, 3200);
+  }
+  HTMLFormElement.prototype.submit = function () { toest(this); };
+  function toest(form) {
+    if (form.id === 'loginForm') { location.href = 'dashboard.html#welkom'; return; }
+    if ((form.getAttribute('action') || '').indexOf('index.html') > -1) { location.href = 'index.html'; return; }
+    var m = document.getElementById('annuleerModal'); if (m) m.classList.remove('open');
+    toast('Demo-weergave: opslaan werkt alleen in de echte versie.');
+  }
+  // Bubbelfase: de eigen controle van elke pagina (rode melding) draait eerst en kan het formulier al stoppen.
+  document.addEventListener('submit', function (e) {
+    if (!e.defaultPrevented) { e.preventDefault(); toest(e.target); }
+  });
+  var pill = document.createElement('div');
+  pill.textContent = 'Demo-weergave';
+  pill.style.cssText = 'position:fixed;right:12px;bottom:10px;background:rgba(28,35,64,.82);color:#fff;font:600 11px Archivo,Arial,sans-serif;padding:5px 10px;border-radius:20px;z-index:99998;pointer-events:none';
+  document.addEventListener('DOMContentLoaded', function () { document.body.appendChild(pill); });
+})();
+</script>
+</head>
+<body>
+
+<div class="pagina">
+
+  <!-- ===== Navigatierail (inklapbaar) ===== -->
+  <div class="rail" id="navRail">
+
+    <div style="display: flex; align-items: center; gap: 10px; padding: 0 14px; margin-bottom: 20px; min-width: 0">
+      <svg width="30" height="30" viewBox="0 0 104 104" style="flex-shrink:0;display:block" aria-hidden="true"><rect x="4" y="4" width="96" height="96" rx="18" fill="#3F8CDD" stroke="#1C2340" stroke-width="4"/><rect x="20" y="58" width="16" height="26" rx="3" fill="#F1EBF7" stroke="#1C2340" stroke-width="3.5"/><rect x="42" y="44" width="16" height="40" rx="3" fill="#FEBD3A" stroke="#1C2340" stroke-width="3.5"/><rect x="64" y="28" width="16" height="56" rx="3" fill="#F66169" stroke="#1C2340" stroke-width="3.5"/></svg>
+      <div class="rail-label" style="font-weight: 700; color: #FFFFFF; font-size: 13px; overflow: hidden">ITIG Portal</div>
+    </div>
+
+    <button id="navToggle" aria-label="Menu in- of uitklappen" style="margin: 0 14px 18px; width: 28px; height: 28px; border-radius: 7px; border: 1px solid #2B4A75; background: transparent; color: #86A9D6; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 17 18 12 13 7"></polyline><polyline points="6 17 11 12 6 7"></polyline></svg>
+    </button>
+
+    <div style="display: flex; flex-direction: column; gap: 2px; padding: 0 10px">
+
+      <a href="dashboard.html" class="navitem" style="display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; min-width: 0">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#86A9D6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+        <span class="rail-label" style="color: #B5C8E3; font-size: 12.5px; font-weight: 600">Dashboard</span>
+      </a>
+
+      <a href="leeruitkomsten.html" class="navitem" style="display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; min-width: 0">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#86A9D6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><path d="M22 10v6M2 10l10-5 10 5-10 5-10-5z"></path><path d="M6 12v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5"></path></svg>
+        <span class="rail-label" style="color: #B5C8E3; font-size: 12.5px; font-weight: 600">Leeruitkomsten</span>
+      </a>
+
+      <a href="projecten.html" class="navitem" style="display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; background: #213A5E; box-shadow: inset 3px 0 0 #FEBD3A; min-width: 0">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+        <span class="rail-label" style="color: #FFFFFF; font-size: 12.5px; font-weight: 600">Projecten</span>
+      </a>
+
+      <a href="uren.html" class="navitem" style="display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; min-width: 0">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#86A9D6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        <span class="rail-label" style="color: #B5C8E3; font-size: 12.5px; font-weight: 600">Uren</span>
+      </a>
+
+      <a href="begeleiding.html" class="navitem" style="display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; min-width: 0">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#86A9D6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+        <span class="rail-label" style="color: #B5C8E3; font-size: 12.5px; font-weight: 600">Begeleiding</span>
+      </a>
+
+      <a href="feedback.html" class="navitem" style="padding: 8px 10px; border-radius: 8px; min-width: 0; display: flex; align-items: center; gap: 10px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#86A9D6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+        <span class="rail-label" style="color: #B5C8E3; font-size: 12.5px; font-weight: 600">Feedback</span>
+      </a>
+    </div>
+
+    <div style="margin-top: auto; padding: 0 10px">
+      <a href="profiel.html" class="navitem gebruikerlink" title="Mijn profiel" style="display: flex; align-items: center; gap: 9px; padding: 6px 4px; min-width: 0; border-radius: 8px">
+        <div style="width: 28px; height: 28px; border-radius: 50%; background: #60ACE1; display: flex; align-items: center; justify-content: center; font-family: 'IBM Plex Mono', monospace; font-weight: 700; color: #0E2240; font-size: 10.5px; flex-shrink: 0">LV</div>
+        <div class="rail-label" style="overflow: hidden">
+          <div style="color: #FFFFFF; font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Lucas de Vries</div>
+          <div style="color: #7F9AC0; font-size: 10.5px; white-space: nowrap">Student</div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- ===== Hoofdinhoud ===== -->
+  <div class="hoofdinhoud">
+  <div class="hoofdinhoud-binnen">
+
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; gap: 16px; flex-wrap: wrap">
+      <div class="kop-opkomst">
+        <div class="mono" style="color: #5B6477; font-size: 12px; margin-bottom: 4px">6 okt 2026 — Periode 1, 2026/2027</div>
+        <h1 style="font-size: 23px; font-weight: 700; letter-spacing: -0.01em; color: #161B26; margin: 0">Mijn projecten</h1>
+      </div>
+      <form method="POST" action="index.html" style="margin: 0">
+        <button type="submit" class="header-uitlog">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+          Uitloggen
+        </button>
+      </form>
+    </div>
+
+    
+
+    <div class="tegels">
+      <div class="kaart tegel"><div class="tegel-label">Nog open</div><div class="tegel-waarde">3</div></div>
+      <div class="kaart tegel"><div class="tegel-label">Wacht op beoordeling</div><div class="tegel-waarde" style="color: #E08A1E">1</div></div>
+      <div class="kaart tegel"><div class="tegel-label">Afgekeurd</div><div class="tegel-waarde" style="color: #D0414B">1</div></div>
+      <div class="kaart tegel"><div class="tegel-label">Gevalideerd</div><div class="tegel-waarde" style="color: #15A363">3</div></div>
+    </div>
+
+    <div class="kaart">
+      
+        <div class="filters" id="filters">
+          <button type="button" class="filter actief" data-status="alle">Alles<span class="aantal">6</span></button>
+          
+            <button type="button" class="filter" data-status="afgekeurd">Afgekeurd<span class="aantal">1</span></button>
+          
+            <button type="button" class="filter" data-status="ingediend">Ingediend<span class="aantal">1</span></button>
+          
+            <button type="button" class="filter" data-status="niet_gestart">Niet gestart<span class="aantal">1</span></button>
+          
+            <button type="button" class="filter" data-status="gevalideerd">Gevalideerd<span class="aantal">3</span></button>
+          
+        </div>
+
+        <div class="project-lijst" id="projectLijst">
+          
+            <div class="project-kaart" data-status="afgekeurd">
+              <button type="button" class="project-kop" aria-expanded="false" aria-controls="paneel-1">
+                <span style="min-width: 0; display: block">
+                  <span class="project-titel" style="display: block">Marketing Dashboard</span>
+                  <span class="project-sub" style="display: block">LS01 - Ontdek de uitdaging</span>
+                </span>
+                <span class="balk-wrap balk-rij">
+                  <span class="balk" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" aria-label="Voortgang Marketing Dashboard"><span style="width: 40%; background: #F08A24"></span></span>
+                  <span class="balk-pct" style="color: #B45309">40%</span>
+                </span>
+                <span class="status-wrap" style="font-size: 12px; font-weight: 700; color: #D0414B">Afgekeurd</span>
+                <svg class="pijl" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </button>
+              <div class="project-paneel" id="paneel-1" role="region" aria-label="Details van Marketing Dashboard">
+                <div class="project-paneel-binnen">
+                  <div class="project-binnen">
+                    <div class="project-groot" style="--pct: 40%">
+                      <div class="kop"><span>Voortgang</span><span class="getal" style="color: #B45309">40%</span></div>
+                      <div class="balk-groot"><span style="background: #F08A24"></span></div>
+                    </div>
+                    <div class="project-feiten">
+                      <span><span class="l">Status</span><span class="w" style="color: #D0414B">Afgekeurd, moet herzien worden</span></span>
+                      <span><span class="l">Uren totaal</span><span class="w">2u</span></span>
+                      <span><span class="l">Goedgekeurd</span><span class="w">0u</span></span>
+                      <span><span class="l">Bijgewerkt</span><span class="w">6 okt 2026</span></span>
+                    </div>
+                    
+                      <div class="mini-uren">
+                        
+                          <span class="mono" style="color: #5B6477">20 sep 2026</span>
+                          <span style="font-weight: 700; font-variant-numeric: tabular-nums">2u</span>
+                          <span style="font-weight: 700; color: #D0414B">Afgekeurd</span>
+                        
+                      </div>
+                    
+                  </div>
+                </div>
+              </div>
+            </div>
+          
+            <div class="project-kaart" data-status="ingediend">
+              <button type="button" class="project-kop" aria-expanded="false" aria-controls="paneel-2">
+                <span style="min-width: 0; display: block">
+                  <span class="project-titel" style="display: block">Interne Tooling Vernieuwing</span>
+                  <span class="project-sub" style="display: block">LS01 - Ontdek de uitdaging</span>
+                </span>
+                <span class="balk-wrap balk-rij">
+                  <span class="balk" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" aria-label="Voortgang Interne Tooling Vernieuwing"><span style="width: 75%; background: #84CC16"></span></span>
+                  <span class="balk-pct" style="color: #4D7C0F">75%</span>
+                </span>
+                <span class="status-wrap" style="font-size: 12px; font-weight: 700; color: #E08A1E">Ingediend</span>
+                <svg class="pijl" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </button>
+              <div class="project-paneel" id="paneel-2" role="region" aria-label="Details van Interne Tooling Vernieuwing">
+                <div class="project-paneel-binnen">
+                  <div class="project-binnen">
+                    <div class="project-groot" style="--pct: 75%">
+                      <div class="kop"><span>Voortgang</span><span class="getal" style="color: #4D7C0F">75%</span></div>
+                      <div class="balk-groot"><span style="background: #84CC16"></span></div>
+                    </div>
+                    <div class="project-feiten">
+                      <span><span class="l">Status</span><span class="w" style="color: #E08A1E">Ingediend, wacht op beoordeling</span></span>
+                      <span><span class="l">Uren totaal</span><span class="w">3u</span></span>
+                      <span><span class="l">Goedgekeurd</span><span class="w">0u</span></span>
+                      <span><span class="l">Bijgewerkt</span><span class="w">6 okt 2026</span></span>
+                    </div>
+                    
+                      <div class="mini-uren">
+                        
+                          <span class="mono" style="color: #5B6477">26 sep 2026</span>
+                          <span style="font-weight: 700; font-variant-numeric: tabular-nums">3u</span>
+                          <span style="font-weight: 700; color: #E08A1E">Ingediend</span>
+                        
+                      </div>
+                    
+                  </div>
+                </div>
+              </div>
+            </div>
+          
+            <div class="project-kaart" data-status="niet_gestart">
+              <button type="button" class="project-kop" aria-expanded="false" aria-controls="paneel-3">
+                <span style="min-width: 0; display: block">
+                  <span class="project-titel" style="display: block">Mobiele App Prototype</span>
+                  <span class="project-sub" style="display: block">LS01 - Ontdek de uitdaging</span>
+                </span>
+                <span class="balk-wrap balk-rij">
+                  <span class="balk" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Voortgang Mobiele App Prototype"><span style="width: 0%; background: #D0414B"></span></span>
+                  <span class="balk-pct" style="color: #B3303A">0%</span>
+                </span>
+                <span class="status-wrap" style="font-size: 12px; font-weight: 700; color: #939BAD">Niet gestart</span>
+                <svg class="pijl" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </button>
+              <div class="project-paneel" id="paneel-3" role="region" aria-label="Details van Mobiele App Prototype">
+                <div class="project-paneel-binnen">
+                  <div class="project-binnen">
+                    <div class="project-groot" style="--pct: 0%">
+                      <div class="kop"><span>Voortgang</span><span class="getal" style="color: #B3303A">0%</span></div>
+                      <div class="balk-groot"><span style="background: #D0414B"></span></div>
+                    </div>
+                    <div class="project-feiten">
+                      <span><span class="l">Status</span><span class="w" style="color: #939BAD">Niet gestart</span></span>
+                      <span><span class="l">Uren totaal</span><span class="w">0u</span></span>
+                      <span><span class="l">Goedgekeurd</span><span class="w">0u</span></span>
+                      <span><span class="l">Bijgewerkt</span><span class="w">6 okt 2026</span></span>
+                    </div>
+                    
+                      <p style="font-size: 12px; color: #8790A3; margin: 0">Er zijn nog geen uren op dit project.</p>
+                    
+                  </div>
+                </div>
+              </div>
+            </div>
+          
+            <div class="project-kaart" data-status="gevalideerd">
+              <button type="button" class="project-kop" aria-expanded="false" aria-controls="paneel-4">
+                <span style="min-width: 0; display: block">
+                  <span class="project-titel" style="display: block">API Koppeling Betaalsysteem</span>
+                  <span class="project-sub" style="display: block">LS01 - Ontdek de uitdaging</span>
+                </span>
+                <span class="balk-wrap balk-rij">
+                  <span class="balk" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" aria-label="Voortgang API Koppeling Betaalsysteem"><span style="width: 100%; background: #15A363"></span></span>
+                  <span class="balk-pct" style="color: #0F7A4A">100%</span>
+                </span>
+                <span class="status-wrap" style="font-size: 12px; font-weight: 700; color: #15A363">Gevalideerd</span>
+                <svg class="pijl" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </button>
+              <div class="project-paneel" id="paneel-4" role="region" aria-label="Details van API Koppeling Betaalsysteem">
+                <div class="project-paneel-binnen">
+                  <div class="project-binnen">
+                    <div class="project-groot" style="--pct: 100%">
+                      <div class="kop"><span>Voortgang</span><span class="getal" style="color: #0F7A4A">100%</span></div>
+                      <div class="balk-groot"><span style="background: #15A363"></span></div>
+                    </div>
+                    <div class="project-feiten">
+                      <span><span class="l">Status</span><span class="w" style="color: #15A363">Gevalideerd</span></span>
+                      <span><span class="l">Uren totaal</span><span class="w">0u</span></span>
+                      <span><span class="l">Goedgekeurd</span><span class="w">0u</span></span>
+                      <span><span class="l">Bijgewerkt</span><span class="w">6 okt 2026</span></span>
+                    </div>
+                    
+                      <p style="font-size: 12px; color: #8790A3; margin: 0">Er zijn nog geen uren op dit project.</p>
+                    
+                  </div>
+                </div>
+              </div>
+            </div>
+          
+            <div class="project-kaart" data-status="gevalideerd">
+              <button type="button" class="project-kop" aria-expanded="false" aria-controls="paneel-5">
+                <span style="min-width: 0; display: block">
+                  <span class="project-titel" style="display: block">Data Migratie Klantportaal</span>
+                  <span class="project-sub" style="display: block">LS01 - Ontdek de uitdaging</span>
+                </span>
+                <span class="balk-wrap balk-rij">
+                  <span class="balk" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" aria-label="Voortgang Data Migratie Klantportaal"><span style="width: 100%; background: #15A363"></span></span>
+                  <span class="balk-pct" style="color: #0F7A4A">100%</span>
+                </span>
+                <span class="status-wrap" style="font-size: 12px; font-weight: 700; color: #15A363">Gevalideerd</span>
+                <svg class="pijl" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </button>
+              <div class="project-paneel" id="paneel-5" role="region" aria-label="Details van Data Migratie Klantportaal">
+                <div class="project-paneel-binnen">
+                  <div class="project-binnen">
+                    <div class="project-groot" style="--pct: 100%">
+                      <div class="kop"><span>Voortgang</span><span class="getal" style="color: #0F7A4A">100%</span></div>
+                      <div class="balk-groot"><span style="background: #15A363"></span></div>
+                    </div>
+                    <div class="project-feiten">
+                      <span><span class="l">Status</span><span class="w" style="color: #15A363">Gevalideerd</span></span>
+                      <span><span class="l">Uren totaal</span><span class="w">0u</span></span>
+                      <span><span class="l">Goedgekeurd</span><span class="w">0u</span></span>
+                      <span><span class="l">Bijgewerkt</span><span class="w">6 okt 2026</span></span>
+                    </div>
+                    
+                      <p style="font-size: 12px; color: #8790A3; margin: 0">Er zijn nog geen uren op dit project.</p>
+                    
+                  </div>
+                </div>
+              </div>
+            </div>
+          
+            <div class="project-kaart" data-status="gevalideerd">
+              <button type="button" class="project-kop" aria-expanded="false" aria-controls="paneel-6">
+                <span style="min-width: 0; display: block">
+                  <span class="project-titel" style="display: block">Website Redesign Opdrachtgever</span>
+                  <span class="project-sub" style="display: block">LS01 - Ontdek de uitdaging</span>
+                </span>
+                <span class="balk-wrap balk-rij">
+                  <span class="balk" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" aria-label="Voortgang Website Redesign Opdrachtgever"><span style="width: 100%; background: #15A363"></span></span>
+                  <span class="balk-pct" style="color: #0F7A4A">100%</span>
+                </span>
+                <span class="status-wrap" style="font-size: 12px; font-weight: 700; color: #15A363">Gevalideerd</span>
+                <svg class="pijl" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </button>
+              <div class="project-paneel" id="paneel-6" role="region" aria-label="Details van Website Redesign Opdrachtgever">
+                <div class="project-paneel-binnen">
+                  <div class="project-binnen">
+                    <div class="project-groot" style="--pct: 100%">
+                      <div class="kop"><span>Voortgang</span><span class="getal" style="color: #0F7A4A">100%</span></div>
+                      <div class="balk-groot"><span style="background: #15A363"></span></div>
+                    </div>
+                    <div class="project-feiten">
+                      <span><span class="l">Status</span><span class="w" style="color: #15A363">Gevalideerd</span></span>
+                      <span><span class="l">Uren totaal</span><span class="w">6,5u</span></span>
+                      <span><span class="l">Goedgekeurd</span><span class="w">6,5u</span></span>
+                      <span><span class="l">Bijgewerkt</span><span class="w">6 okt 2026</span></span>
+                    </div>
+                    
+                      <div class="mini-uren">
+                        
+                          <span class="mono" style="color: #5B6477">5 okt 2026</span>
+                          <span style="font-weight: 700; font-variant-numeric: tabular-nums">4,5u</span>
+                          <span style="font-weight: 700; color: #15A363">Goedgekeurd</span>
+                        
+                          <span class="mono" style="color: #5B6477">4 okt 2026</span>
+                          <span style="font-weight: 700; font-variant-numeric: tabular-nums">2u</span>
+                          <span style="font-weight: 700; color: #15A363">Goedgekeurd</span>
+                        
+                      </div>
+                    
+                  </div>
+                </div>
+              </div>
+            </div>
+          
+        </div>
+        <div class="legenda"><span>Kleur van de voortgang:</span><span><span class="punt" style="background: #D0414B"></span>0 – 20%</span><span><span class="punt" style="background: #F08A24"></span>21 – 40%</span><span><span class="punt" style="background: #EAB308"></span>41 – 60%</span><span><span class="punt" style="background: #84CC16"></span>61 – 80%</span><span><span class="punt" style="background: #15A363"></span>81 – 100%</span></div>
+      
+    </div>
+    
+
+  </div>
+  </div>
+</div>
+
+<script>
+  var rail = document.getElementById('navRail');
+  document.getElementById('navToggle').addEventListener('click', function () { rail.classList.toggle('expanded'); });
+  document.querySelectorAll('.tegel').forEach(function (el, i) { el.style.setProperty('--i', i); });
+  document.querySelectorAll('.kaart:not(.tegel)').forEach(function (el) { el.style.setProperty('--i', 4); });
+
+  // Project open- en dichtklappen (vloeiend via CSS, hier alleen de klasse en aria-expanded).
+  document.querySelectorAll('.project-kop').forEach(function (kop) {
+    kop.addEventListener('click', function () {
+      var kaart = kop.closest('.project-kaart');
+      var open = kaart.classList.toggle('open');
+      kop.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+  });
+
+  // Filter op status.
+  var filters = document.querySelectorAll('.filter');
+  filters.forEach(function (knop) {
+    knop.addEventListener('click', function () {
+      filters.forEach(function (k) { k.classList.toggle('actief', k === knop); });
+      var status = knop.getAttribute('data-status');
+      document.querySelectorAll('.project-kaart').forEach(function (kaart) {
+        kaart.classList.toggle('weg', status !== 'alle' && kaart.getAttribute('data-status') !== status);
+      });
+    });
+  });
+</script>
+
+</body>
+</html>
